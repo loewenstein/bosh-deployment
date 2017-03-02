@@ -1,0 +1,95 @@
+---
+- type: replace
+  path: /releases/-
+  value:
+    name: bosh-kubernetes-cpi
+    url: http://bosh.io/d/github.com/SAP/bosh-kubernetes-cpi-release?v=5
+    sha1: 180f26ce90bd1cadbec016380cd7014bf615d9f1
+
+- type: replace
+  path: /resource_pools/name=vms/stemcell?
+  value:
+    url: https://s3.eu-central-1.amazonaws.com/bosh-kubernetes-cpi-stemcells/bosh-stemcell-3363.9-kubernetes-ubuntu-trusty-go_agent.tgz
+    sha1: b6c305bd20255fd3c935e134cb90a9e06fad92b2
+
+# Configure sizes
+- type: replace
+  path: /resource_pools/name=vms/cloud_properties?
+  value:
+    services:
+      - name: outer-bosh
+        type: NodePort
+        ports:
+          - name: ssh-gateway
+            port: 22
+            node_port: 30022
+          - name: bosh-init
+            port: 6868
+            node_port: 30068
+          - name: nats
+            port: 4222
+            node_port: 30042
+          - name: blobstore
+            port: 30250
+            node_port: 30250
+          - name: director
+            port: 25555
+            node_port: 30555
+
+- type: replace
+  path: /resource_pools/name=vms/env?/bosh?/authorized_keys?/-
+  value:
+    ((vcap_public_key))
+
+- type: remove
+  path: /instance_groups/name=bosh/networks/name=default/static_ips
+
+- type: replace
+  path: /networks/name=default
+  value:
+    name: default
+    type: dynamic
+
+# Add CPI job
+- type: replace
+  path: /instance_groups/name=bosh/jobs/-
+  value: &cpi_job
+    name: kubernetes_cpi
+    release: bosh-kubernetes-cpi
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/director/cpi_job?
+  value: kubernetes_cpi
+
+- type: replace
+  path: /cloud_provider/template?
+  value: *cpi_job
+
+- type: replace
+  path: /disk_pools/name=disks/disk_size
+  value: 10_000
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/blobstore/port
+  value: 30250
+- type: replace
+  path: /instance_groups/name=bosh/properties/agent/mbus
+  value: nats://nats:((nats_password))@((internal_ip)):30042
+- type: replace
+  path: /cloud_provider/mbus
+  value: https://mbus:((mbus_bootstrap_password))@((internal_ip)):30068
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/kubernetes?
+  value:
+    access: ServiceAccount
+
+- type: replace
+  path: /cloud_provider/properties/kubernetes?
+  value:
+    access:
+      server: ((kube_api_server))
+      namespace: ((kube_namespace))
+      credentials:
+        certificate: ((client_cert))
+        private_key: ((client_key))
