@@ -1,0 +1,82 @@
+---
+- type: replace
+  path: /releases/-
+  value:
+    name: bosh-kubernetes-cpi
+    url: https://github.com/SAP/bosh-kubernetes-cpi-release/releases/download/v1-alpha/bosh-kubernetes-cpi-1-alpha.tgz
+    sha1: df43d3ee2cb83190bd696a242d1b82e9d8d641f7
+
+- type: replace
+  path: /resource_pools/name=vms/stemcell?
+  value:
+    url: https://github.com/SAP/bosh-kubernetes-cpi-release/releases/download/v1-alpha/bosh-stemcell-3363.9-kubernetes-ubuntu-trusty-go_agent.tgz
+    sha1: 319acc5aa020f12a2a20392c971ebf8ef3d0cd6e
+
+# Configure sizes
+- type: replace
+  path: /resource_pools/name=vms/cloud_properties?
+  value:
+    services:
+      - name: outer-bosh
+        type: NodePort
+        ports:
+          - name: bosh-init
+            port: 6868
+            nodePort: ((port-bosh-init))
+          - name: nats
+            port: 4222
+            nodePort: ((port-nats))
+          - name: blobstore
+            port: ((port-blobstore))
+            nodePort: ((port-blobstore))
+          - name: director
+            port: 25555
+            nodePort: ((port-director))
+
+- type: replace
+  path: /networks/name=default
+  value:
+    name: default
+    type: dynamic
+
+# Add CPI job
+- type: replace
+  path: /instance_groups/name=bosh/jobs/-
+  value: &cpi_job
+    name: kubernetes_cpi
+    release: bosh-kubernetes-cpi
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/director/cpi_job?
+  value: kubernetes_cpi
+
+- type: replace
+  path: /cloud_provider/template?
+  value: *cpi_job
+
+- type: replace
+  path: /disk_pools/name=disks/disk_size
+  value: 10_000
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/blobstore/port
+  value: ((port-blobstore))
+- type: replace
+  path: /instance_groups/name=bosh/properties/agent/mbus
+  value: nats://nats:((nats_password))@((internal_ip)):((port-nats))
+- type: replace
+  path: /cloud_provider/mbus
+  value: https://mbus:((mbus_bootstrap_password))@((internal_ip)):((port-bosh-init))
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/kubernetes?
+  value: &kubernetes
+    apiEndpoint: https://((host_ip)):8443
+    namespace: ((namespace))
+    credentials:
+      certificate: ((client-cert))
+      privateKey: ((client-key))
+
+- type: replace
+  path: /cloud_provider/properties/kubernetes?
+  value: *kubernetes

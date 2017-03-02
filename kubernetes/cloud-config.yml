@@ -1,0 +1,22 @@
+azs:
+- name: z1
+
+vm_types:
+- name: default
+
+disk_types:
+- name: default
+  disk_size: 1024
+
+networks:
+- name: default
+  type: dynamic
+  subnets:
+  - azs: [z1]
+
+compilation:
+  workers: 3
+  reuse_compilation_vms: true
+  az: z1
+  vm_type: default
+  network: default

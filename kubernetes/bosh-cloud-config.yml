@@ -1,0 +1,17 @@
+---
+- type: replace
+  path: /vm_extensions?/name=bosh/cloud_properties?
+  value:
+    services:
+      - name: inner-bosh
+        type: NodePort
+        ports:
+          - name: nats
+            port: 4222
+            nodePort: ((port-nats))
+          - name: blobstore
+            port: ((port-blobstore))
+            nodePort: ((port-blobstore))
+          - name: director
+            port: 25555
+            nodePort: ((port-director))
