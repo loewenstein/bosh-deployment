@@ -3,8 +3,8 @@
   path: /releases/-
   value:
     name: bosh-kubernetes-cpi
-    url: https://github.com/SAP/bosh-kubernetes-cpi-release/releases/download/v2-alpha/bosh-kubernetes-cpi-2-alpha.tgz
-    sha1: a05bbee69b469ac200deff23a6edf9f9b9711308
+    url: https://github.com/SAP/bosh-kubernetes-cpi-release/releases/download/v3-alpha/bosh-kubernetes-cpi-3-alpha.tgz
+    sha1: 5124702e611bb22181ed348d80324d3244424105
 
 - type: replace
   path: /resource_pools/name=vms/stemcell?
@@ -32,6 +32,9 @@
           - name: director
             port: 25555
             nodePort: ((port-director))
+
+- type: remove
+  path: /instance_groups/name=bosh/networks/name=default/static_ips
 
 - type: replace
   path: /networks/name=default
@@ -70,13 +73,15 @@
 
 - type: replace
   path: /instance_groups/name=bosh/properties/kubernetes?
-  value: &kubernetes
-    apiEndpoint: https://((host_ip)):8443
-    namespace: ((namespace))
-    credentials:
-      certificate: ((client-cert))
-      privateKey: ((client-key))
+  value:
+    cluster-access: ServiceAccount
 
 - type: replace
   path: /cloud_provider/properties/kubernetes?
-  value: *kubernetes
+  value:
+    cluster-access:
+      server: https://((host_ip)):8443
+      namespace: ((namespace))
+      credentials:
+        certificate: ((client-cert))
+        private-key: ((client-key))
