@@ -6,9 +6,6 @@
   path: /releases/name=bosh-kubernetes-cpi/version?
   value: latest
 
-- type: remove
-  path: /instance_groups/name=bosh/networks/name=default/static_ips
-
 - type: replace
   path: /instance_groups/name=bosh/vm_extensions?/-
   value: bosh
