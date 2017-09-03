@@ -17,24 +17,8 @@
   path: /resource_pools/name=vms/cloud_properties?
   value:
     services:
-      - name: outer-bosh
-        type: NodePort
-        ports:
-          - name: ssh-gateway
-            port: 22
-            node_port: 30022
-          - name: bosh-init
-            port: 6868
-            node_port: 30068
-          - name: nats
-            port: 4222
-            node_port: 30042
-          - name: blobstore
-            port: 30250
-            node_port: 30250
-          - name: director
-            port: 25555
-            node_port: 30555
+      - name: bosh-internal
+      - name: bosh-external
 
 - type: replace
   path: /resource_pools/name=vms/env?/bosh?/authorized_keys?/-
@@ -68,16 +52,6 @@
 - type: replace
   path: /disk_pools/name=disks/disk_size
   value: 10_000
-
-- type: replace
-  path: /instance_groups/name=bosh/properties/blobstore/port
-  value: 30250
-- type: replace
-  path: /instance_groups/name=bosh/properties/agent/mbus
-  value: nats://nats:((nats_password))@((internal_ip)):30042
-- type: replace
-  path: /cloud_provider/mbus
-  value: https://mbus:((mbus_bootstrap_password))@((internal_ip)):30068
 
 - type: replace
   path: /instance_groups/name=bosh/properties/kubernetes?
