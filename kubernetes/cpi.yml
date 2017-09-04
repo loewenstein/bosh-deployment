@@ -18,7 +18,6 @@
   value:
     services:
       - name: bosh-internal
-      - name: bosh-external
 
 - type: replace
   path: /resource_pools/name=vms/env?/bosh?/authorized_keys?/-
