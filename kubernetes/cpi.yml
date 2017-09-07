@@ -55,7 +55,10 @@
 - type: replace
   path: /instance_groups/name=bosh/properties/kubernetes?
   value:
-    access: ServiceAccount
+    access:
+      server: ((kube_api_server))
+      namespace: ((kube_namespace))
+      credentials: ServiceAccount
 
 - type: replace
   path: /cloud_provider/properties/kubernetes?
