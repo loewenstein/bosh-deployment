@@ -1,0 +1,17 @@
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/director/default_ssh_options?/gateway_host
+  value: ((node_ip))
+
+# todo should not access non-defined vars
+- type: replace
+  path: /cloud_provider/mbus
+  value: https://mbus:((mbus_bootstrap_password))@((node_ip)):((create_env_port))
+
+- type: replace
+  path: /variables/name=mbus_bootstrap_ssl/options/alternative_names/-
+  value: ((node_ip))
+
+- type: replace
+  path: /variables/name=director_ssl/options/alternative_names/-
+  value: ((node_ip))
